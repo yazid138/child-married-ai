@@ -11,6 +11,8 @@ import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
+// @ts-ignore
+import { useSpeechSynthesis } from 'react-speech-kit'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -20,6 +22,7 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, className, session, missingKeys }: ChatProps) {
+  const { speak } = useSpeechSynthesis()
   const router = useRouter()
   const path = usePathname()
   const [input, setInput] = useState('')
@@ -42,6 +45,13 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       router.refresh()
     }
   }, [aiState.messages, router])
+
+  useEffect(() => {
+    const lastMessage = aiState.messages[aiState.messages.length - 1]
+    if (lastMessage?.content) {
+      speak({ text: lastMessage.content })
+    }
+  }, [aiState.messages.length]);
 
   useEffect(() => {
     setNewChatId(id)

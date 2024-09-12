@@ -1,5 +1,7 @@
 'use client'
 
+import 'regenerator-runtime/runtime'
+
 import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
 
@@ -17,6 +19,11 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
+import SpeechRecognition, {
+  useSpeechRecognition
+} from 'react-speech-recognition'
+import { useEffect } from 'react'
+import { CircleIcon, StopIcon } from '@radix-ui/react-icons'
 
 export function PromptForm({
   input,
@@ -30,12 +37,22 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
+  const {
+    transcript,
+    listening,
+    browserSupportsSpeechRecognition,
+    isMicrophoneAvailable
+  } = useSpeechRecognition()
 
   React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
     }
   }, [])
+
+  useEffect(() => {
+    setInput(transcript)
+  }, [transcript])
 
   return (
     <form
@@ -98,7 +115,29 @@ export function PromptForm({
           value={input}
           onChange={e => setInput(e.target.value)}
         />
-        <div className="absolute right-0 top-[13px] sm:right-4">
+        <div className="absolute right-0 top-[13px] sm:right-4 flex gap-2">
+          {browserSupportsSpeechRecognition && isMicrophoneAvailable && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onTouchStart={() =>
+                    SpeechRecognition.startListening({ language: 'en-US' })
+                  }
+                  onMouseDown={() =>
+                    SpeechRecognition.startListening({ language: 'en-US' })
+                  }
+                  onTouchEnd={SpeechRecognition.stopListening}
+                  onMouseUp={SpeechRecognition.stopListening}
+                  type="button"
+                  size="icon"
+                >
+                  {listening ? <StopIcon /> : <CircleIcon />}
+                  <span className="sr-only">Send voice</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Send voice</TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button type="submit" size="icon" disabled={input === ''}>
