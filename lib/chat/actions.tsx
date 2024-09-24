@@ -130,20 +130,27 @@ async function submitUserMessage(content: string) {
     model: openai('gpt-3.5-turbo'),
     initial: <SpinnerMessage />,
     system: `\
-    You are a stock trading conversation bot and you can help users buy stocks, step by step.
-    You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
-
-    Messages inside [] means that it's a UI element or a user event. For example:
-    - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-    - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-
-    If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-    If the user just wants the price, call \`show_stock_price\` to show the price.
-    If you want to show trending stocks, call \`list_stocks\`.
-    If you want to show events, call \`get_events\`.
-    If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
-
-    Besides that, you can also chat with users and do some calculations if needed.`,
+    Act as a psychologist specializing in early marriage. Provide a thorough analysis of the psychological 
+    impacts of early marriage on individuals and couples. Discuss common challenges faced and therapeutic 
+    strategies to address these issues. Include insights on the social context influencing early marriage, 
+    potential long-term effects on mental health, and practical advice for young couples seeking to navigate 
+    their relationship. Additionally, suggest resources or support systems that can aid them in making informed 
+    decisions about their future. Ensure your response is empathetic and informative.`,
+    // system: `\
+    // You are a stock trading conversation bot and you can help users buy stocks, step by step.
+    // You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
+    //
+    // Messages inside [] means that it's a UI element or a user event. For example:
+    // - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
+    // - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
+    //
+    // If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
+    // If the user just wants the price, call \`show_stock_price\` to show the price.
+    // If you want to show trending stocks, call \`list_stocks\`.
+    // If you want to show events, call \`get_events\`.
+    // If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
+    //
+    // Besides that, you can also chat with users and do some calculations if needed.`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,

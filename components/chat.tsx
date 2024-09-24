@@ -5,14 +5,13 @@ import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
-import { useEffect, useState } from 'react'
-import { useUIState, useAIState } from 'ai/rsc'
+import { useEffect, useRef, useState } from 'react'
+import { useAIState, useUIState } from 'ai/rsc'
 import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
 // @ts-ignore
-import { useSpeechSynthesis } from 'react-speech-kit'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -22,12 +21,13 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, className, session, missingKeys }: ChatProps) {
-  const { speak } = useSpeechSynthesis()
   const router = useRouter()
   const path = usePathname()
   const [input, setInput] = useState('')
   const [messages] = useUIState()
   const [aiState] = useAIState()
+  const audioRef = useRef(new Audio())
+  const [counter, setCounter] = useState(0)
 
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
@@ -49,9 +49,17 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   useEffect(() => {
     const lastMessage = aiState.messages[aiState.messages.length - 1]
     if (lastMessage?.content) {
-      speak({ text: lastMessage.content })
+      if (counter > 0) {
+        ;(async () => {
+          const response = await fetch('/api/speech?message='+lastMessage.content)
+          const blob = new Blob([await response.blob()], { type: 'audio/mp3' })
+          audioRef.current.src = URL.createObjectURL(blob)
+          await audioRef.current.play()
+        })();
+      }
+      setCounter((prevState) => prevState + 1)
     }
-  }, [aiState.messages.length]);
+  }, [aiState.messages.length])
 
   useEffect(() => {
     setNewChatId(id)
